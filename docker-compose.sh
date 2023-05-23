@@ -2,6 +2,7 @@
 
 read -p "Czy chcesz zainstalować lxqt? " if_lxqt
 read -p "Czy chcesz zainstalować NextCloud? " if_nextcloud
+read -p "Podaj token do cloudflared? " cloudflared_token
 
 # aktualizacje
 sudo apt update
@@ -22,28 +23,31 @@ sudo apt update
 sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
 # instalowanie cloudflared
-curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && 
+sudo curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && 
 sudo dpkg -i cloudflared.deb && 
-sudo cloudflared service install eyJhIjoiMWIyMTRlZmI5OWI4MDU2Njg2YWFlMGNhZWRlYmJhMmYiLCJ0IjoiZDNjM2IzZTMtYmY3ZS00MWY5LWJiOTEtNjEyZDM1ZTRiZjJjIiwicyI6Ik16QmhaRGN4TkRjdE9URXdNaTAwWlRsbUxXSXdPV0l0TXpRMk5UUTRNbUUyTXpkbSJ9
+sudo cloudflared service install $cloudflared_token
 # ^tutaj token musi być pobrany od użytkownika
 
+
+# kopiowanie dockera compose z repozytorium i uruchamianie kontenerów
+sudo mv docker-compose.yml /opt/docker-compose.yml
+
+sudo docker compose -f /opt/docker-compose.yml up -d
+
 # kopiowanie configu do home assistanta z trusted proxy i ikonkami w menu
-use_x_forwarded_for: true
+sudo echo "http: 
+  use_x_forwarded_for: true
   trusted_proxies:
     - 172.30.33.0/24
     - 172.18.0.0/16
+    - 172.18.0.2
+    - $(hostname -I | cut -d ' ' -f1)" | sudo tee -a /opt/homeassistant/config/configuration.yaml
     
-panel_iframe:
-  portainer:
-    title: "Portainer"
-    url: "http://localhost:9000/#/containers"
-    icon: mdi:docker
-    require_admin: true
-  nextcloud:
-    title: "NextCloud"
-    url: "http://localhost:8080"
-    icon: mdi:cloud
-    require_admin: true
+if [ "$if_lxqt" == "y" ]; then
+  sudo apt install -y lxqt-core sddm
+fi
 
-# uruchamianie kilku plików .yml jedną komendą
-# docker-compose -f docker-compose.yml -f docker-compose-mongo.yml up -d
+if [ "$if_nextcloud" == "y" ]; then
+  sudo apt install -y snapd
+  sudo snap install nextcloud
+fi
