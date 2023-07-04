@@ -7,7 +7,7 @@ read -p "Podaj token do cloudflared? " cloudflared_token
 # aktualizacje
 sudo apt update
 sudo apt upgrade -y
-
+cloudflared.exe service install eyJhIjoiMWIyMTRlZmI5OWI4MDU2Njg2YWFlMGNhZWRlYmJhMmYiLCJ0IjoiZDNjM2IzZTMtYmY3ZS00MWY5LWJiOTEtNjEyZDM1ZTRiZjJjIiwicyI6Ik16QmhaRGN4TkRjdE9URXdNaTAwWlRsbUxXSXdPV0l0TXpRMk5UUTRNbUUyTXpkbSJ9
 # instalowanie zależności
 sudo apt install ca-certificates curl gnupg lsb-release -y
 
